@@ -201,10 +201,10 @@ class Dataset(object):
         # data preprocessing for training and test data
         # To be replaced with new data method
         train, valid, test = load_split_dataset(config)
-        self.train = self._intersect_train_test(train, test[0])
+        self.train = self._intersect_train_test(train, test)
         self.n_train = len(self.train.index)
-        self.valid = self._reindex_list(valid)
-        self.test = self._reindex_list(test)
+        self.valid = self._reindex_list([valid])
+        self.test = self._reindex_list([test])
         self.item_sampler = AliasTable(
             self.train[DEFAULT_ITEM_COL].value_counts().to_dict()
         )
@@ -683,38 +683,54 @@ class Dataset(object):
             normalized_adj_single(item_sim_mat) + sp.eye(item_sim_mat.shape[0]),
         )
 
-    def make_multi_graph(self):
+    def make_multi_graph(self, source):
         """ Note that the first column is the user/item ID
         Returns
             normalized_adj_single
         """
-        self.load_user_item_fea()
-        self.init_train_items()
+        
         user_edge_s, user_edge_e, user_edge_type = [], [], []
         item_edge_s, item_edge_e, item_edge_type = [], [], []
+        
+        if source == 'sap':
+            self.init_train_items()
+            
+            knowledge_df = pd.read_csv("/Users/I524012/Desktop/pretrain/datasets/SAP/raw/sap_interaction.txt", sep='\t', header=None, names = ['source_id', 'relation_id', 'target_id'])
+            
+            for _, row in knowledge_df.iterrows():
+                item_edge_s.append(row['source_id'])
+                item_edge_e.append(row['target_id'])
+                item_edge_type.append(row['relation_id'])
+                
+            n_user_fea = 0
+            n_item_fea = knowledge_df['relation_id'].nunique()
+            
+        else:
+            self.load_user_item_fea()
+            self.init_train_items()
 
-        n_user_fea = self.user_feat.shape[1]
-        n_item_fea = self.item_feat.shape[1]
+            n_user_fea = self.user_feat.shape[1]
+            n_item_fea = self.item_feat.shape[1]
 
-        print(f"generating multigraph from user feature, n_user_fea:{n_user_fea}")
-        for idx in tqdm(range(n_user_fea), file=sys.stdout):
-            col = self.user_feat[:, idx]
-            users = np.where(col != 0)[0]
-            for i in range(users.shape[0]):
-                for j in range(users.shape[0]):
-                    user_edge_s.append(users[i])
-                    user_edge_e.append(users[j])
-                    user_edge_type.append(idx)
+            print(f"generating multigraph from user feature, n_user_fea:{n_user_fea}")
+            for idx in tqdm(range(n_user_fea), file=sys.stdout):
+                col = self.user_feat[:, idx]
+                users = np.where(col != 0)[0]
+                for i in range(users.shape[0]):
+                    for j in range(users.shape[0]):
+                        user_edge_s.append(users[i])
+                        user_edge_e.append(users[j])
+                        user_edge_type.append(idx)
 
-        print(f"generating multigraph from item feature, n_item_fea:{n_item_fea}")
-        for idx in tqdm(range(n_item_fea), file=sys.stdout):
-            col = self.item_feat[:, idx]
-            items = np.where(col != 0)[0]
-            for i in range(items.shape[0]):
-                for j in range(items.shape[0]):
-                    item_edge_s.append(items[i])
-                    item_edge_e.append(items[j])
-                    item_edge_type.append(idx)
+            print(f"generating multigraph from item feature, n_item_fea:{n_item_fea}")
+            for idx in tqdm(range(n_item_fea), file=sys.stdout):
+                col = self.item_feat[:, idx]
+                items = np.where(col != 0)[0]
+                for i in range(items.shape[0]):
+                    for j in range(items.shape[0]):
+                        item_edge_s.append(items[i])
+                        item_edge_e.append(items[j])
+                        item_edge_type.append(idx)
 
         user_edge_list = np.array([user_edge_s, user_edge_e])
         user_edge_type = np.array(user_edge_type)

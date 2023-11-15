@@ -90,7 +90,7 @@ class LightGCN_train(TrainEngine):
             item_edge_type,
             self.config["n_user_fea"],
             self.config["n_item_fea"],
-        ) = self.dataset.make_multi_graph()
+        ) = self.dataset.make_multi_graph(self.config['dataset'])
         self.sample_generator = SampleGenerator(ratings=self.dataset.train)
         self.config["user_edge_list"] = torch.LongTensor(user_edge_list)
         self.config["user_edge_type"] = torch.LongTensor(user_edge_type)

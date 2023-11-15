@@ -2,6 +2,7 @@ import numpy as np
 
 from src.datasets.foursquare import Foursquare
 from src.datasets.movielens import Movielens_1m, Movielens_25m, Movielens_100k
+from src.datasets.sap import Sap
 
 
 def load_user_fea_dic(config, fea_type):
@@ -80,6 +81,7 @@ def load_split_dataset(config):
         "ml_1m": Movielens_1m,
         "ml_25m": Movielens_25m,
         "foursquare": Foursquare,
+        "sap": Sap,
     }
     dataset = dataset_mapping[config["dataset"]]()
     return dataset.load_split(config)
@@ -101,6 +103,7 @@ def load_user_item_feature(config):
         "ml_1m": Movielens_1m,
         "ml_25m": Movielens_25m,
         "foursquare": Foursquare,
+        "sap": Sap,
     }
     dataset = dataset_mapping[config["dataset"]]()
     return dataset.load_fea_vec()

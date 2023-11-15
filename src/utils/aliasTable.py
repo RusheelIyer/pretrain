@@ -46,7 +46,7 @@ class AliasTable:
 
         table_size = vocab_size
         prob_arr = np.zeros(table_size)  # Probability Array
-        alias_arr = np.zeros(table_size, dtype=np.int)  # Alias Array
+        alias_arr = np.zeros(table_size, dtype=np.int32)  # Alias Array
         print("Filling alias table")
 
         # Sort the data into the outcomes with probabilities
