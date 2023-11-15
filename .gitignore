@@ -33,7 +33,6 @@ coverage.xml
 logs/
 results/
 checkpoints/
-datasets/
 !src/datasets/
 runs/
 samples/
